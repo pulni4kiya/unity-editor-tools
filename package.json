@@ -1,10 +1,9 @@
 {
   "name": "com.pulni.editor-tools",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "displayName": "Pulni's Editor Tools",
-  "description": "A set of generic editor tools for Unity",
-  "unity": "2020.1",
-  "dependencies": {},
+  "description": "This is a set of useful editor tools for Unity:\n- TypePicker - an attribute for SerializeReference fields of abstract/interface types which allows picking concrete types\n- ExposedProperties - a component that visualizes/groups properties of other components\n- DebugHelper - a set of menu items and APIs that allow you to debug specific object instances",
+  "unity": "2021.3",
   "author": {
     "name": "Pulni",
     "email": "pulni@pulni.com",
