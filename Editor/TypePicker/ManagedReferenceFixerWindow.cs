@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	public class ManagedReferenceFixerWindow : EditorWindow {
 		private const string ManagedReferencePath = "managedReferences";
 

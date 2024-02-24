@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	[InitializeOnLoad]
 	public static class ExposedParamsMenu {
 		private const string UnityEventCallsPath = ".m_PersistentCalls.m_Calls";

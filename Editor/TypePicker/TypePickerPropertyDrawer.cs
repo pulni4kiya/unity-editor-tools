@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using System.Reflection;
-using Pulni.Attributes;
-using System.Runtime.CompilerServices;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	[CustomPropertyDrawer(typeof(TypePickerAttribute))]
 	public class TypePickerPropertyDrawer : PropertyDrawer {
 		private static object[] typesProviderArgs = new object[1];

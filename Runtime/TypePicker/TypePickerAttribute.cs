@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Pulni.Attributes {
+namespace Pulni.EditorTools {
 	public class TypePickerAttribute : PropertyAttribute {
 		public string TypesGetterMethodName { get; set; }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace Pulni.EditorTools {
@@ -31,7 +30,9 @@ namespace Pulni.EditorTools {
 			Debug.unityLogger.Log(logType, message, context);
 		}
 
-		[MenuItem("CONTEXT/MonoBehaviour/Toggle Debug")]
+#if UNITY_EDITOR
+
+		[UnityEditor.MenuItem("CONTEXT/MonoBehaviour/Toggle Debug")]
 		private static void DebugMono(UnityEditor.MenuCommand command) {
 			var component = (MonoBehaviour)command.context;
 			if (_components.Contains(component)) {
@@ -43,7 +44,7 @@ namespace Pulni.EditorTools {
 			}
 		}
 
-		[MenuItem("GameObject/Toggle Debug")]
+		[UnityEditor.MenuItem("GameObject/Toggle Debug")]
 		private static void DebugGameObject(UnityEditor.MenuCommand command) {
 			var go = (GameObject)command.context;
 			if (_gameObjects.Contains(go)) {
@@ -56,5 +57,7 @@ namespace Pulni.EditorTools {
 				Debug.Log($"Debugging enabled for all components on game object: {go}- {_components.Count}");
 			}
 		}
+
+#endif
 	}
 }

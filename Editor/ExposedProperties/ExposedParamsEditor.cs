@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	[CustomEditor(typeof(ExposedParams))]
-	public class ExposedParamsEditor : Editor {
+	public class ExposedParamsEditor : UnityEditor.Editor {
 		private bool isInEditMode = false;
 
 		public override void OnInspectorGUI() {

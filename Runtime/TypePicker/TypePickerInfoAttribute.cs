@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Pulni.Attributes {
+namespace Pulni.EditorTools {
 	public class TypePickerInfoAttribute : Attribute {
 		public string Name { get; set; }
 		public int Order { get; set; }

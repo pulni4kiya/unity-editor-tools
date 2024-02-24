@@ -3,11 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Pulni.Attributes;
 using UnityEditor;
 using UnityEngine;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	public static class TypePickerHelper {
 		private static Dictionary<string, TypePickerOptions> subtypesCache = new Dictionary<string, TypePickerOptions>();
 		private static Dictionary<string, Type> typesCache = new Dictionary<string, Type>();

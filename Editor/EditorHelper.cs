@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	public static class EditorHelper {
 		public static object GetContainingObject(SerializedObject source, SerializedProperty property) {
 			var parentProperty = property;
