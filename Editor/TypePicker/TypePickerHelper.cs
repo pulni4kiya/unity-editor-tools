@@ -84,7 +84,7 @@ namespace Pulni.EditorTools {
 			info.displayNames = GetTypeNames(info.subtypes).ToArray();
 		}
 
-		internal static MethodInfo GetGetterMethod(object container, string typesGetterMethodName) {
+		public static MethodInfo GetGetterMethod(object container, string typesGetterMethodName) {
 			var type = container.GetType();
 			if (!methodsCache.TryGetValue((type, typesGetterMethodName), out var result)) {
 				result = type.GetMethod(typesGetterMethodName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);

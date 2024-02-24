@@ -16,7 +16,7 @@ namespace Pulni.EditorTools {
 				parentProperty = source.FindProperty(parentPath);
 			} while (parentProperty.isArray);
 
-			return parentProperty.boxedValue;
+			return parentProperty.managedReferenceValue;
 		}
 	}
 }

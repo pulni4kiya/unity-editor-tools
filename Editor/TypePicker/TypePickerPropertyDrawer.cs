@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 namespace Pulni.EditorTools {
 	[CustomPropertyDrawer(typeof(TypePickerAttribute))]
 	public class TypePickerPropertyDrawer : PropertyDrawer {
-		private static object[] argaList = new object[0];
+		private static object[] typesProviderArgs = new object[1];
 		private TypePickerAttribute Attribute => (TypePickerAttribute)attribute;
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -37,6 +37,8 @@ namespace Pulni.EditorTools {
 			}
 
 			if (property.isExpanded) {
+				var labelCopy = new GUIContent(label);
+
 				var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
 				var index = Array.IndexOf(subtypes.subtypes, currentType);
 
@@ -48,7 +50,7 @@ namespace Pulni.EditorTools {
 					SetReferenceValue(property, () => Activator.CreateInstance(subtypes.subtypes[newIndex]));
 				}
 
-				EditorGUI.PropertyField(position, property, true);
+				EditorGUI.PropertyField(position, property, labelCopy, true);
 			} else {
 				property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label);
 			}
@@ -64,8 +66,15 @@ namespace Pulni.EditorTools {
 			} else {
 				try {
 					var container = EditorHelper.GetContainingObject(property.serializedObject, property);
+					if (container == null) {
+						return new TypePickerOptions() {
+							displayNames = new string[0],
+							subtypes = new Type[0]
+						};
+					}
 					var method = TypePickerHelper.GetGetterMethod(container, this.Attribute.TypesGetterMethodName);
-					return (TypePickerOptions)method.Invoke(container, argaList);
+					typesProviderArgs[0] = property;
+					return (TypePickerOptions)method.Invoke(container, typesProviderArgs);
 				}
 				catch (Exception ex) {
 					Debug.LogException(ex);

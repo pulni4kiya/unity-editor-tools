@@ -21,8 +21,8 @@ public static class SerializedReferenceCopyMenu {
 
 		var localProp = property.Copy();
 		menu.AddItem(new GUIContent("Copy as value"), false, () => {
-			_lastCopied = JsonUtility.ToJson(localProp.boxedValue);
-			_lastCopiedType = localProp.boxedValue.GetType();
+			_lastCopied = JsonUtility.ToJson(localProp.managedReferenceValue);
+			_lastCopiedType = localProp.managedReferenceValue.GetType();
 		});
 
 		var propType = TypePickerHelper.GetActualType(property.managedReferenceFieldTypename);
