@@ -68,7 +68,7 @@ namespace Pulni.EditorTools.Editor {
 							subtypes = new Type[0]
 						};
 					}
-					var method = TypePickerHelper.GetGetterMethod(container, this.Attribute.TypesGetterMethodName);
+					var method = EditorHelper.GetGetterMethod(container, this.Attribute.TypesGetterMethodName);
 					typesProviderArgs[0] = property;
 					return (TypePickerOptions)method.Invoke(container, typesProviderArgs);
 				}
