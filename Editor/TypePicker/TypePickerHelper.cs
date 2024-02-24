@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Pulni.EditorTools.Attributes;
+using Pulni.Attributes;
 using UnityEditor;
 using UnityEngine;
 

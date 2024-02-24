@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System.Reflection;
-using Pulni.EditorTools.Attributes;
+using Pulni.Attributes;
 using System.Runtime.CompilerServices;
 
 namespace Pulni.EditorTools {
