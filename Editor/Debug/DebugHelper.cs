@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace Pulni.EditorTools {
 	public static class DebugHelper {
-		private static HashSet<MonoBehaviour> _components = new();
-		private static HashSet<GameObject> _gameObjects = new();
+		private static HashSet<MonoBehaviour> _components = new HashSet<MonoBehaviour>();
+		private static HashSet<GameObject> _gameObjects = new HashSet<GameObject>();
 
 		public static bool Check(MonoBehaviour component) {
 			return _components.Contains(component);

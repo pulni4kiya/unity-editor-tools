@@ -9,9 +9,9 @@ using UnityEngine;
 
 namespace Pulni.EditorTools {
 	public static class TypePickerHelper {
-		private static Dictionary<string, TypePickerOptions> subtypesCache = new();
-		private static Dictionary<string, Type> typesCache = new();
-		private static Dictionary<(Type, string), MethodInfo> methodsCache = new();
+		private static Dictionary<string, TypePickerOptions> subtypesCache = new Dictionary<string, TypePickerOptions>();
+		private static Dictionary<string, Type> typesCache = new Dictionary<string, Type>();
+		private static Dictionary<(Type, string), MethodInfo> methodsCache = new Dictionary<(Type, string), MethodInfo>();
 
 
 		/// <summary>

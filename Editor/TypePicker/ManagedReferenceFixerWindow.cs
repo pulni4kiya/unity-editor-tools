@@ -9,7 +9,7 @@ namespace Pulni.EditorTools {
 	public class ManagedReferenceFixerWindow : EditorWindow {
 		private const string ManagedReferencePath = "managedReferences";
 
-		private Dictionary<GameObject, ManagedReferenceError> _errors = new();
+		private Dictionary<GameObject, ManagedReferenceError> _errors = new Dictionary<GameObject, ManagedReferenceError>();
 
 		private Vector2 _scroll;
 
@@ -198,7 +198,7 @@ namespace Pulni.EditorTools {
 
 		private class ManagedReferenceError {
 			public GameObject ObjectWithModifications;
-			public List<PropertyModification> Modifications = new();
+			public List<PropertyModification> Modifications = new List<PropertyModification>();
 			public bool IsExpanded = false;
 		}
 	}
