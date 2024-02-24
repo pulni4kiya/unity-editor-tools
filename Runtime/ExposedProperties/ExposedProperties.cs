@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Pulni.EditorTools {
-	public class ExposedParams : MonoBehaviour {
+	public class ExposedProperties : MonoBehaviour {
 #if UNITY_EDITOR || !UNITY_2021_2_OR_NEWER
-		[field: SerializeField] public ParamsConfig ExposedParamsConfig { get; set; } = new ParamsConfig();
+		[field: SerializeField] public PropertiesConfig ExposedPropertiesConfig { get; set; } = new PropertiesConfig();
 #endif
 
 		[Serializable]
-		public class ParamsConfig {
+		public class PropertiesConfig {
 			[field: SerializeField] public bool IsReadOnly { get; set; }
-			[field: SerializeField] public List<Param> Params { get; set; } = new List<Param>();
+			[field: SerializeField] public List<Param> Properties { get; set; } = new List<Param>();
 		}
 
 		[Serializable]

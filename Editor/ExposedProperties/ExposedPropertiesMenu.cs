@@ -5,10 +5,10 @@ using UnityEngine;
 
 namespace Pulni.EditorTools.Editor {
 	[InitializeOnLoad]
-	public static class ExposedParamsMenu {
+	public static class ExposedPropertiesMenu {
 		private const string UnityEventCallsPath = ".m_PersistentCalls.m_Calls";
 
-		static ExposedParamsMenu() {
+		static ExposedPropertiesMenu() {
 			EditorApplication.contextualPropertyMenu += OnContextMenuOpening;
 		}
 
@@ -25,28 +25,28 @@ namespace Pulni.EditorTools.Editor {
 			}
 
 			AddMenuItem(menu, go, targetObject, property, "Here");
-			foreach (var exposedParams in go.GetComponentsInParent<ExposedParams>()) {
-				AddMenuItem(menu, exposedParams.gameObject, targetObject, property);
+			foreach (var exposedProperties in go.GetComponentsInParent<ExposedProperties>()) {
+				AddMenuItem(menu, exposedProperties.gameObject, targetObject, property);
 			}
 		}
 
 		private static void AddMenuItem(GenericMenu menu, GameObject go, UnityEngine.Object targetObject, SerializedProperty property, string nameOverride = null) {
 			var localProperty = property.Copy();
 			menu.AddItem(new GUIContent($"Expose property/{nameOverride ?? $"In '{go.name}'"}"), false, () => {
-				var exposedParams = go.GetComponent<ExposedParams>();
-				if (exposedParams == null) {
-					exposedParams = go.AddComponent<ExposedParams>();
+				var exposedProperties = go.GetComponent<ExposedProperties>();
+				if (exposedProperties == null) {
+					exposedProperties = go.AddComponent<ExposedProperties>();
 				}
 				var propertyPath = localProperty.propertyPath;
 				if (propertyPath.EndsWith(UnityEventCallsPath)) {
 					propertyPath = propertyPath.Substring(0, propertyPath.Length - UnityEventCallsPath.Length);
 				}
-				exposedParams.ExposedParamsConfig.Params.Add(new ExposedParams.Param() {
+				exposedProperties.ExposedPropertiesConfig.Properties.Add(new ExposedProperties.Param() {
 					Target = targetObject,
 					PropertyPath = propertyPath,
 					Label = localProperty.displayName,
 				});
-				EditorUtility.SetDirty(exposedParams);
+				EditorUtility.SetDirty(exposedProperties);
 			});
 		}
 	}

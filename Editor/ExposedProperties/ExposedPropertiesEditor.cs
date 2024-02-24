@@ -4,8 +4,8 @@ using UnityEditor;
 using UnityEngine;
 
 namespace Pulni.EditorTools.Editor {
-	[CustomEditor(typeof(ExposedParams))]
-	public class ExposedParamsEditor : UnityEditor.Editor {
+	[CustomEditor(typeof(ExposedProperties))]
+	public class ExposedPropertiesEditor : UnityEditor.Editor {
 		private bool isInEditMode = false;
 
 		public override void OnInspectorGUI() {
@@ -16,16 +16,16 @@ namespace Pulni.EditorTools.Editor {
 					this.isInEditMode = false;
 				}
 			} else {
-				var startEditing = GUILayout.Button("Edit exposed params settings");
+				var startEditing = GUILayout.Button("Edit exposed properties settings");
 				if (startEditing) {
 					this.isInEditMode = true;
 				}
 			}
 
-			var exposedParams = (ExposedParams)this.target;
-			var config = exposedParams.ExposedParamsConfig;
+			var exposedProperties = (ExposedProperties)this.target;
+			var config = exposedProperties.ExposedPropertiesConfig;
 
-			foreach (var param in config.Params) {
+			foreach (var param in config.Properties) {
 				if (param.Target == null) continue;
 
 				var obj = new SerializedObject(param.Target);
