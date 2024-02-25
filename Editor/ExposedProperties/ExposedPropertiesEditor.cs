@@ -28,9 +28,22 @@ namespace Pulni.EditorTools.Editor {
 			var exposedProperties = (ExposedProperties)this.target;
 			var config = exposedProperties.ExposedPropertiesConfig;
 
+			var hasManualProperty = ExposedPropertiesMenu.ManualProeprty != null;
+			if (!hasManualProperty) {
+				GUI.enabled = false;
+			}
+			var addManualProperty = GUILayout.Button("Add manually copied property");
+			if (addManualProperty) {
+				var copy = JsonUtility.FromJson<ExposedProperties.Param>(JsonUtility.ToJson(ExposedPropertiesMenu.ManualProeprty));
+				config.Properties.Add(copy);
+			}
+			if (!hasManualProperty) {
+				GUI.enabled = true;
+			}
+
 			this.rootNode = new GroupNode("");
 			foreach (var property in config.Properties) {
-				this.rootNode.AddProperty(property);
+				this.rootNode.AddProperty(property, config);
 			}
 
 			this.rootNode.ShowRootNodes();
@@ -80,20 +93,20 @@ namespace Pulni.EditorTools.Editor {
 				}
 			}
 
-			public void AddProperty(ExposedProperties.Param property) {
-				this.AddProperty(property, property.Label.Split('/'), 0);
+			public void AddProperty(ExposedProperties.Param property, ExposedProperties.PropertiesConfig globalConfig) {
+				this.AddProperty(property, property.Label.Split('/'), 0, globalConfig);
 			}
 
-			private void AddProperty(ExposedProperties.Param property, string[] path, int indexInPath) {
+			private void AddProperty(ExposedProperties.Param property, string[] path, int indexInPath, ExposedProperties.PropertiesConfig globalConfig) {
 				if (indexInPath == path.Length - 1) {
-					this.subnodes.Add(new PropertyNode(property, path[indexInPath]));
+					this.subnodes.Add(new PropertyNode(property, path[indexInPath], globalConfig));
 				} else {
 					var group = subnodes.OfType<GroupNode>().Where(grp => grp.Name == path[indexInPath]).FirstOrDefault();
 					if (group == null) {
 						group = new GroupNode(path[indexInPath]);
 						this.subnodes.Add(group);
 					}
-					group.AddProperty(property, path, indexInPath + 1);
+					group.AddProperty(property, path, indexInPath + 1, globalConfig);
 				}
 			}
 		}
@@ -101,10 +114,12 @@ namespace Pulni.EditorTools.Editor {
 		private class PropertyNode : INode {
 			private ExposedProperties.Param property;
 			private string label;
+			private ExposedProperties.PropertiesConfig globalConfig;
 
-			public PropertyNode(ExposedProperties.Param property, string label) {
+			public PropertyNode(ExposedProperties.Param property, string label, ExposedProperties.PropertiesConfig globalConfig) {
 				this.property = property;
 				this.label = label;
+				this.globalConfig = globalConfig;
 			}
 
 			public void ShowNode() {
@@ -115,7 +130,7 @@ namespace Pulni.EditorTools.Editor {
 
 				if (prop == null) return;
 
-				if (this.property.IsReadOnly || this.property.IsReadOnly) {
+				if (this.globalConfig.IsReadOnly || this.property.IsReadOnly) {
 					GUI.enabled = false;
 				}
 
@@ -125,7 +140,7 @@ namespace Pulni.EditorTools.Editor {
 					EditorGUILayout.PropertyField(prop, new GUIContent(this.label), this.property.ShowChildren);
 				}
 
-				if (this.property.IsReadOnly || this.property.IsReadOnly) {
+				if (this.globalConfig.IsReadOnly || this.property.IsReadOnly) {
 					GUI.enabled = true;
 				}
 

@@ -8,6 +8,8 @@ namespace Pulni.EditorTools.Editor {
 	public static class ExposedPropertiesMenu {
 		private const string UnityEventCallsPath = ".m_PersistentCalls.m_Calls";
 
+		public static ExposedProperties.Param ManualProeprty { get; private set; }
+
 		static ExposedPropertiesMenu() {
 			EditorApplication.contextualPropertyMenu += OnContextMenuOpening;
 		}
@@ -28,6 +30,7 @@ namespace Pulni.EditorTools.Editor {
 			foreach (var exposedProperties in go.GetComponentsInParent<ExposedProperties>()) {
 				AddMenuItem(menu, exposedProperties.gameObject, targetObject, property);
 			}
+			AddCopyItem(menu, targetObject, property);
 		}
 
 		private static void AddMenuItem(GenericMenu menu, GameObject go, UnityEngine.Object targetObject, SerializedProperty property, string nameOverride = null) {
@@ -37,10 +40,9 @@ namespace Pulni.EditorTools.Editor {
 				if (exposedProperties == null) {
 					exposedProperties = go.AddComponent<ExposedProperties>();
 				}
-				var propertyPath = localProperty.propertyPath;
-				if (propertyPath.EndsWith(UnityEventCallsPath)) {
-					propertyPath = propertyPath.Substring(0, propertyPath.Length - UnityEventCallsPath.Length);
-				}
+
+				var propertyPath = FixPropertyPath(localProperty.propertyPath);
+
 				exposedProperties.ExposedPropertiesConfig.Properties.Add(new ExposedProperties.Param() {
 					Target = targetObject,
 					PropertyPath = propertyPath,
@@ -48,6 +50,25 @@ namespace Pulni.EditorTools.Editor {
 				});
 				EditorUtility.SetDirty(exposedProperties);
 			});
+		}
+
+		private static void AddCopyItem(GenericMenu menu, Object targetObject, SerializedProperty property) {
+			var localProperty = property.Copy();
+			menu.AddItem(new GUIContent($"Expose property/Manual"), false, () => {
+				var propertyPath = FixPropertyPath(localProperty.propertyPath);
+				ManualProeprty = new ExposedProperties.Param() {
+					Target = targetObject,
+					PropertyPath = propertyPath,
+					Label = localProperty.displayName,
+				};
+			});
+		}
+
+		private static string FixPropertyPath(string propertyPath) {
+			if (propertyPath.EndsWith(UnityEventCallsPath)) {
+				propertyPath = propertyPath.Substring(0, propertyPath.Length - UnityEventCallsPath.Length);
+			}
+			return propertyPath;
 		}
 	}
 }
