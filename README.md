@@ -71,7 +71,6 @@ And the result is:
 
 Here's example code:
 ```csharp
-
 public class MyMono : MonoBehaviour {
 	[SerializeField] private bool allowNodes;
 	[SerializeReference, TypePicker(nameof(GetTypeOptions))] private IMyInterface myInteraface;
@@ -120,20 +119,23 @@ And an example of copying SerializeReference objects:
 1. Changing the name of a class, namespace or assembly that is serialized using `[SerializeReference]` will cause serialization problems, but these can be solved by using the `[MovedFrom]` attribute (from the `UnityEngine.Scripting.APIUpdating` namespace) and specifying the old name.
 2. Every now and then you may get an error like
    >Trying to update the managed reference registry with invalid propertyPath(likely caused by a missing reference instance)'managedReferences[X].Y', with value 'Z'
+
    which happens because data is serialized (usually as prefab override) but the serialized reference it's supposed to override no longer exists.
    This can be resolved by using the `SerializedReferenceFixerWindow`.
 3. SerializeReference has some limitations when it comes to Generics or UnityEngine.Object objects. You can read more details [here](https://docs.unity3d.com/ScriptReference/SerializeReference.html).
 
 ### SerializedReferenceFixerWindow
 This is a window that basically cleans up old and unused `[SerializeReference]` data (specifically prefab overrides to objects that no longer exist).
-Using the window below, you can find all instances of such issues and clear them with a press of a button.
+Using the window below, you can find all instances of such issues and clear them with the press of a button.
 
 ![2024-02-25-16-36-27-Unity-0021](https://github.com/pulni4kiya/unity-editor-tools/assets/31959408/02480df9-8bbe-48fd-b77c-2f2437d472c1)
 
 ## ExposedProperties
-ExposedProperties ia s simple component that just shows properties from other components, allowing you to control the most relevant/common properties of a hierarchy at its root, making it easier to set things up.
+Add a facade for your complex prefabs in the inspector!
 
-In the UI of the component, you can:
+ExposedProperties ia s simple component that just shows properties from other components, allowing you to control the most relevant/common properties of a hierarchy at its root. This makes it much easier to set things up for a new instance of a prefab, and less likely to forget some important field.
+
+Additionally, in the UI of the component, you can:
 - Show custom (more descriptive) names for the properties
 - Group the proprties into a foldout
 - Make some (or all) properties read-only
@@ -143,14 +145,17 @@ In the UI of the component, you can:
 https://github.com/pulni4kiya/unity-editor-tools/assets/31959408/bc04aba2-eec2-481b-915e-c1e179935d2f
 
 ## DebugHelper
-The DebugHelper allows you to debug specific instances of your objects and components - very useful when you have many instances of the same component, but you only want to debug one.
+Improve your debug speed when dealing with many objects 
+
+The DebugHelper allows you to debug specific instances of your objects and components - very useful when you have many instances of the same component getting in the way of debugging the one that has a problem.
 
 ### How to use
 The DebugHelper adds a "Toggle Debug" menu item that allow you to toggle debugging on any component or game object (which means all of its components).  
 As soon as you click that menu item, you'll get a log whether debugging was enabled or disabled for the object / component.  
-Note: The flag is stored by the component instance as key, so it resets to disabled when an instance is destroyed.
+*Note: The flag is stored by the component instance as key, so it resets to disabled when an instance is destroyed.*
 
 Once you've enabled debugging for a component, you can put conditional breakpoints inside its code with the `DBG.Check(this)` as condition.
+*Note: Conditional breakpoints are rather slow, you may want to use the methods mentioned below instead.*
 
 Additionally, you can use `DBG.LogIfDebugged`,  `DBG.BreakIfDebugged` and `DBG.ActionIfDebugged` to log messages, trigger a debugger break or do some custom action only if a component is being debugged. These calls will get removed from builds (using the Conditional attribute).
 
@@ -170,4 +175,4 @@ And here's a video of the process:
 
 https://github.com/pulni4kiya/unity-editor-tools/assets/31959408/59b44ee4-82f3-41fe-a7c6-8c7d5ecc2146
 
-Note: If the class DBG in the global namespace is not convenient for you, you can add the `PULNI_NO_DBG` compilation symbol, and the class will be removed. Instead you'll be able to use the class `DebugHelper` (in Pulni.EditorTools namespace) which provides the actual functionality.
+*Note: If the class DBG in the global namespace is not convenient for you, you can add the `PULNI_NO_DBG` compilation symbol, and the class will be removed. Instead you'll be able to use the class `DebugHelper` (in Pulni.EditorTools namespace) which provides the actual functionality.*
