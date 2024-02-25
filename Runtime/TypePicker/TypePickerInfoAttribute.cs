@@ -6,7 +6,7 @@ namespace Pulni.EditorTools {
 		public string Name { get; set; }
 		public int Order { get; set; }
 
-		public TypePickerInfoAttribute(string name, int order = 0) {
+		public TypePickerInfoAttribute(string name = null, int order = 0) {
 			Name = name;
 			Order = order;
 		}

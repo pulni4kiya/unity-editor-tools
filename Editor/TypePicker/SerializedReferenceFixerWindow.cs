@@ -5,18 +5,18 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Pulni.EditorTools.Editor {
-	public class ManagedReferenceFixerWindow : EditorWindow {
+namespace Pulni.EditorTools {
+	public class SerializedReferenceFixerWindow : EditorWindow {
 		private const string ManagedReferencePath = "managedReferences";
 
-		private Dictionary<GameObject, ManagedReferenceError> _errors = new Dictionary<GameObject, ManagedReferenceError>();
+		private Dictionary<GameObject, ManagedReferenceError> _errors = new();
 
 		private Vector2 _scroll;
 
 		[MenuItem("Window/Pulni/Serialized Reference Fixer")]
 		public static void ShowWindow() {
 			//Show existing window instance. If one doesn't exist, make one.
-			EditorWindow.GetWindow(typeof(ManagedReferenceFixerWindow));
+			EditorWindow.GetWindow(typeof(SerializedReferenceFixerWindow));
 		}
 
 		private void OnGUI() {
@@ -25,7 +25,7 @@ namespace Pulni.EditorTools.Editor {
 		}
 
 		private void ShowFindErrorButtons() {
-			GUILayout.Label("Find managed reference errors in:", EditorStyles.boldLabel);
+			GUILayout.Label("Find serialized reference errors in:", EditorStyles.boldLabel);
 			GUILayout.BeginHorizontal();
 			var selectionClicked = GUILayout.Button("Selection");
 			if (selectionClicked) {
@@ -45,14 +45,14 @@ namespace Pulni.EditorTools.Editor {
 		private void ShowErrorsFound() {
 			if (_errors == null || _errors.Count == 0) return;
 
-			GUILayout.Label($"Errors found: {_errors.Count} / {_errors.Sum(err => err.Value.Modifications.Count)}", EditorStyles.boldLabel);
+			GUILayout.Label($"Errors found: {_errors.Sum(err => err.Value.Modifications.Count)} in {_errors.Count} objects", EditorStyles.boldLabel);
 
 			var fixAllClicked = GUILayout.Button("Fix ALL");
 			if (fixAllClicked) {
 				foreach (var error in _errors.Values) {
 					FixManyErrors(error.ObjectWithModifications, error.Modifications);
-					_errors.Clear();
 				}
+				_errors.Clear();
 			}
 
 			_scroll = EditorGUILayout.BeginScrollView(_scroll);
@@ -136,6 +136,7 @@ namespace Pulni.EditorTools.Editor {
 				if (mods == null) continue;
 				foreach (var mod in mods) {
 					if (!mod.propertyPath.Contains(ManagedReferencePath)) continue;
+					if (mod.target == null) continue;
 
 					var instanceObj = GetInstanceObject(go, mod.target);
 					if (instanceObj == null) continue;
@@ -198,7 +199,7 @@ namespace Pulni.EditorTools.Editor {
 
 		private class ManagedReferenceError {
 			public GameObject ObjectWithModifications;
-			public List<PropertyModification> Modifications = new List<PropertyModification>();
+			public List<PropertyModification> Modifications = new();
 			public bool IsExpanded = false;
 		}
 	}

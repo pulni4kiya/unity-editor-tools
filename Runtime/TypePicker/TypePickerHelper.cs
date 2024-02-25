@@ -5,9 +5,9 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace Pulni.EditorTools.Editor {
+namespace Pulni.EditorTools {
 	public static class TypePickerHelper {
-		private static Dictionary<string, TypePickerOptions> subtypesCache = new Dictionary<string, TypePickerOptions>();
+		private static Dictionary<Type, TypePickerOptions> subtypesCache = new Dictionary<Type, TypePickerOptions>();
 		private static Dictionary<string, Type> typesCache = new Dictionary<string, Type>();
 
 		/// <summary>
@@ -17,9 +17,22 @@ namespace Pulni.EditorTools.Editor {
 		/// <returns>The available types or null if called in build</returns>
 		public static TypePickerOptions GetAvailableTypes(string propertyTypeName) {
 #if UNITY_EDITOR
+			var type = GetActualType(propertyTypeName);
+			return GetAvailableTypes(type);
+#else
+			return null;
+#endif
+		}
+
+		/// <summary>
+		/// Retrieves a list of types that can be assigned to a property of the given type.
+		/// </summary>
+		/// <param name="propertyTypeName">The type name as written in SerializedProperty.managedReferenceFieldTypename</param>
+		/// <returns>The available types or null if called in build</returns>
+		public static TypePickerOptions GetAvailableTypes(Type type) {
+#if UNITY_EDITOR
 			TypePickerOptions result;
-			if (subtypesCache.TryGetValue(propertyTypeName, out result) == false) {
-				var type = GetActualType(propertyTypeName);
+			if (subtypesCache.TryGetValue(type, out result) == false) {
 				result = new TypePickerOptions();
 
 				result.subtypes = UnityEditor.TypeCache.GetTypesDerivedFrom(type)
@@ -28,10 +41,11 @@ namespace Pulni.EditorTools.Editor {
 					.Where(t => typeof(UnityEngine.Object).IsAssignableFrom(t) == false)
 					.Where(t => !t.ContainsGenericParameters && !t.IsGenericType)
 					.OrderBy(GetTypeOrder)
+					.ThenBy(GetTypeName)
 					.ToArray();
 
 				result.FillNamesFromTypes();
-				subtypesCache[propertyTypeName] = result;
+				subtypesCache[type] = result;
 			}
 			return result;
 #else
@@ -74,7 +88,7 @@ namespace Pulni.EditorTools.Editor {
 		/// <returns>The name specified through TypePickerInfoAttribute or the type's name if no attribute.</returns>
 		public static string GetTypeName(Type type) {
 			var attr = type.GetCustomAttribute<TypePickerInfoAttribute>();
-			return attr != null ? attr.Name : type.Name;
+			return attr != null && attr.Name != null ? attr.Name : type.Name;
 		}
 
 		/// <summary>

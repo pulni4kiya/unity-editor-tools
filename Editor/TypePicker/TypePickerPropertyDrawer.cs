@@ -6,7 +6,7 @@ using UnityEditor;
 namespace Pulni.EditorTools.Editor {
 	[CustomPropertyDrawer(typeof(TypePickerAttribute))]
 	public class TypePickerPropertyDrawer : PropertyDrawer {
-		private static object[] typesProviderArgs = new object[1];
+		private static object[] typesProviderArgs = new object[0];
 		private TypePickerAttribute Attribute => (TypePickerAttribute)attribute;
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -23,8 +23,10 @@ namespace Pulni.EditorTools.Editor {
 
 		private void OnItemGUI(Rect position, SerializedProperty property, GUIContent label) {
 			var subtypes = GetAvailableTypes(property);
+			var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
+			var index = Array.IndexOf(subtypes.subtypes, currentType);
 
-			if (string.IsNullOrEmpty(property.managedReferenceFullTypename)) {
+			if (string.IsNullOrEmpty(property.managedReferenceFullTypename) || index < 0) {
 				if (subtypes.subtypes.Length == 0) {
 					EditorGUI.LabelField(position, label, new GUIContent("No valid types found."));
 					return;
@@ -35,8 +37,6 @@ namespace Pulni.EditorTools.Editor {
 			if (property.isExpanded) {
 				var labelCopy = new GUIContent(label);
 
-				var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
-				var index = Array.IndexOf(subtypes.subtypes, currentType);
 
 				var typePickerPosition = position;
 				typePickerPosition.height = EditorGUIUtility.singleLineHeight;
@@ -69,7 +69,6 @@ namespace Pulni.EditorTools.Editor {
 						};
 					}
 					var method = EditorHelper.GetGetterMethod(container, this.Attribute.TypesGetterMethodName);
-					typesProviderArgs[0] = property;
 					return (TypePickerOptions)method.Invoke(container, typesProviderArgs);
 				}
 				catch (Exception ex) {
