@@ -15,11 +15,11 @@ Unity **2021.3** or later.
 ## Installation
 1. You can install this via git url by adding a new package from the package manager and pasting this address
 ```
-https://github.com/pulni4kiya/EditorTools.git
+https://github.com/pulni4kiya/unity-editor-tools.git
 ```
 2. Alternatively, you can manually add this entry in your **manifest.json**
 ```
-"com.pulni.editor-tools": "https://github.com/pulni4kiya/EditorTools.git"
+"com.pulni.editor-tools": "https://github.com/pulni4kiya/unity-editor-tools.git"
 ```
 3. The package is also available on the [openupm registry](https://openupm.com). You can install it via [openupm-cli](https://github.com/openupm/openupm-cli).
 ```
