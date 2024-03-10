@@ -60,11 +60,9 @@ namespace Pulni.EditorTools {
 		public static Type GetActualType(string propertyTypeName) {
 			Type result;
 			if (typesCache.TryGetValue(propertyTypeName, out result) == false) {
-				var words = propertyTypeName.Split(' ');
-				result = AppDomain.CurrentDomain
-					.GetAssemblies()
-					.SelectMany(ass => ass.GetTypes())
-					.SingleOrDefault(t => t.FullName == words[words.Length - 1] && t.Assembly.GetName().Name == words[0]);
+				var parts = propertyTypeName.Split(' ', 2);
+				var assembly = Assembly.Load(parts[0]);
+				result = assembly.GetType(parts[1]);
 				typesCache[propertyTypeName] = result;
 			}
 

@@ -56,26 +56,37 @@ namespace Pulni.EditorTools.Editor {
 			return EditorGUI.GetPropertyHeight(property, label);
 		}
 
-		public TypePickerOptions GetAvailableTypes(SerializedProperty property) {
-			if (string.IsNullOrEmpty(this.Attribute.TypesGetterMethodName)) {
-				return TypePickerHelper.GetAvailableTypes(property.managedReferenceFieldTypename);
-			} else {
-				try {
-					var container = EditorHelper.GetContainingObject(property.serializedObject, property);
-					if (container == null) {
-						return new TypePickerOptions() {
-							displayNames = new string[0],
-							subtypes = new Type[0]
-						};
-					}
-					var method = EditorHelper.GetGetterMethod(container, this.Attribute.TypesGetterMethodName);
-					return (TypePickerOptions)method.Invoke(container, typesProviderArgs);
-				}
-				catch (Exception ex) {
-					Debug.LogException(ex);
-					return TypePickerHelper.GetAvailableTypes(property.managedReferenceFieldTypename);
-				}
+		private TypePickerOptions GetAvailableTypes(SerializedProperty property) {
+			var options = GetCustomAvailableTypes(property);
+
+			if (options == null) {
+				options = TypePickerHelper.GetAvailableTypes(property.managedReferenceFieldTypename);
 			}
+
+			return options;
+		}
+
+		private TypePickerOptions GetCustomAvailableTypes(SerializedProperty property) {
+			if (string.IsNullOrEmpty(this.Attribute.TypesGetterMethodName)) return null;
+
+			try {
+				var container = EditorHelper.GetContainingObject(property.serializedObject, property);
+				if (container == null) {
+					Debug.LogError($"[TypePicker] Couldn't resolve object containing property {property.propertyPath}.");
+					return null;
+				}
+
+				var method = EditorHelper.GetMethodOnObject(container, this.Attribute.TypesGetterMethodName);
+				if (method == null) {
+					Debug.LogError($"[TypePicker] Couldn't resolve method \"{ this.Attribute.TypesGetterMethodName}\" on an object of type \"{container.GetType().Name}\"!");
+					return null;
+				}
+
+				return (TypePickerOptions)method.Invoke(container, typesProviderArgs);
+			} catch (Exception ex) {
+				Debug.LogException(ex);
+			}
+			return null;
 		}
 
 		private void SetReferenceValue(SerializedProperty property, Func<object> valueProvider) {

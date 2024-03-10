@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Pulni.EditorTools {
+namespace Pulni.EditorTools.Editor {
 	public static class EditorHelper {
 		private static Dictionary<(Type, string), MethodInfo> methodsCache = new Dictionary<(Type, string), MethodInfo>();
 
@@ -23,10 +23,17 @@ namespace Pulni.EditorTools {
 			return parentProperty.managedReferenceValue;
 		}
 
-		public static MethodInfo GetGetterMethod(object container, string typesGetterMethodName) {
+		public static MethodInfo GetMethodOnObject(object container, string typesGetterMethodName) {
 			var type = container.GetType();
 			if (!methodsCache.TryGetValue((type, typesGetterMethodName), out var result)) {
-				result = type.GetMethod(typesGetterMethodName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+				var currentType = type;
+				while (currentType != null) {
+					result = currentType.GetMethod(typesGetterMethodName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+					if (result != null) {
+						break;
+					}
+					currentType = currentType.BaseType;
+				}
 				methodsCache[(type, typesGetterMethodName)] = result;
 			}
 			return result;
