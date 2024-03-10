@@ -58,6 +58,8 @@ namespace Pulni.EditorTools {
 		/// </summary>
 		/// <param name="propertyTypeName">The type name as written in SerializedProperty.managedReferenceFieldTypename</param>
 		public static Type GetActualType(string propertyTypeName) {
+			if (string.IsNullOrEmpty(propertyTypeName)) return null;
+
 			Type result;
 			if (typesCache.TryGetValue(propertyTypeName, out result) == false) {
 				var parts = propertyTypeName.Split(' ', 2);
@@ -75,7 +77,7 @@ namespace Pulni.EditorTools {
 		/// </summary>
 		/// <returns>The order value specified through TypePickerInfoAttribute  or 0 if no attribute</returns>
 		public static int GetTypeOrder(Type type) {
-			var attr = type.GetCustomAttribute<TypePickerInfoAttribute>();
+			var attr = type?.GetCustomAttribute<TypePickerInfoAttribute>();
 			return attr?.Order ?? 0;
 		}
 
@@ -85,6 +87,7 @@ namespace Pulni.EditorTools {
 		/// </summary>
 		/// <returns>The name specified through TypePickerInfoAttribute or the type's name if no attribute.</returns>
 		public static string GetTypeName(Type type) {
+			if (type == null) return "<null>";
 			var attr = type.GetCustomAttribute<TypePickerInfoAttribute>();
 			return attr != null && attr.Name != null ? attr.Name : type.Name;
 		}

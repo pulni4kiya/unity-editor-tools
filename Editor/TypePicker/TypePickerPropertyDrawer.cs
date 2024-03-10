@@ -26,12 +26,12 @@ namespace Pulni.EditorTools.Editor {
 			var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
 			var index = Array.IndexOf(subtypes.subtypes, currentType);
 
-			if (string.IsNullOrEmpty(property.managedReferenceFullTypename) || index < 0) {
+			if (index < 0) {
 				if (subtypes.subtypes.Length == 0) {
 					EditorGUI.LabelField(position, label, new GUIContent("No valid types found."));
 					return;
 				}
-				SetReferenceValue(property, () => Activator.CreateInstance(subtypes.subtypes[0]));
+				SetReferenceValue(property, subtypes.subtypes[0]);
 			}
 
 			if (property.isExpanded) {
@@ -43,7 +43,7 @@ namespace Pulni.EditorTools.Editor {
 				var newIndex = EditorGUI.Popup(typePickerPosition, " ", index, subtypes.displayNames);
 
 				if (newIndex != index) {
-					SetReferenceValue(property, () => Activator.CreateInstance(subtypes.subtypes[newIndex]));
+					SetReferenceValue(property, subtypes.subtypes[newIndex]);
 				}
 
 				EditorGUI.PropertyField(position, property, labelCopy, true);
@@ -61,6 +61,10 @@ namespace Pulni.EditorTools.Editor {
 
 			if (options == null) {
 				options = TypePickerHelper.GetAvailableTypes(property.managedReferenceFieldTypename);
+			}
+
+			if (this.Attribute.AllowNull && !options.subtypes.Contains(null)) {
+				options = InsertNullOption(options);
 			}
 
 			return options;
@@ -89,12 +93,26 @@ namespace Pulni.EditorTools.Editor {
 			return null;
 		}
 
-		private void SetReferenceValue(SerializedProperty property, Func<object> valueProvider) {
+		private TypePickerOptions InsertNullOption(TypePickerOptions options) {
+			var optionsWithNull = new TypePickerOptions();
+
+			optionsWithNull.subtypes = new Type[options.subtypes.Length + 1];
+			Array.Copy(options.subtypes, 0, optionsWithNull.subtypes, 1, options.subtypes.Length);
+			optionsWithNull.subtypes[0] = null;
+
+			optionsWithNull.displayNames = new string[options.displayNames.Length + 1];
+			Array.Copy(options.displayNames, 0, optionsWithNull.displayNames, 1, options.displayNames.Length);
+			optionsWithNull.displayNames[0] = "<null>";
+
+			return optionsWithNull;
+		}
+
+		private void SetReferenceValue(SerializedProperty property, Type type) {
 			foreach (var obj in property.serializedObject.targetObjects) {
 				var serializedObj = new SerializedObject(obj);
 				var prop = serializedObj.FindProperty(property.propertyPath);
 				ClearOldManagedReference(prop);
-				prop.managedReferenceValue = valueProvider();
+				prop.managedReferenceValue = type != null ? Activator.CreateInstance(type) : null;
 				serializedObj.ApplyModifiedProperties();
 			}
 		}
