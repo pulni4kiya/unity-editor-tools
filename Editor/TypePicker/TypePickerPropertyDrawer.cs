@@ -6,7 +6,8 @@ using UnityEditor;
 namespace Pulni.EditorTools.Editor {
 	[CustomPropertyDrawer(typeof(TypePickerAttribute))]
 	public class TypePickerPropertyDrawer : PropertyDrawer {
-		private static object[] typesProviderArgs = new object[0];
+		private static object[] typesProvider0Args = new object[0];
+		private static object[] typesProvider1Arg = new object[1];
 		private TypePickerAttribute Attribute => (TypePickerAttribute)attribute;
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -86,7 +87,16 @@ namespace Pulni.EditorTools.Editor {
 					return null;
 				}
 
-				return (TypePickerOptions)method.Invoke(container, typesProviderArgs);
+				if (method.GetParameters().Length > 0)
+                {
+					typesProvider1Arg[0] = property;
+					return (TypePickerOptions)method.Invoke(container, typesProvider1Arg);
+				}
+				else
+				{
+					return (TypePickerOptions)method.Invoke(container, typesProvider0Args);
+				}
+
 			} catch (Exception ex) {
 				Debug.LogException(ex);
 			}
