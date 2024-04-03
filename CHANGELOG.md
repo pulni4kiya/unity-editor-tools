@@ -1,3 +1,7 @@
+v1.5.0 - 04.04.2024
+- Allow TypePicker custom options method to take a SerializedProperty parameter
+- Fix bug resolving methods for custom options
+
 v1.4.0 - 10.03.2024
 - Improve TypePicker:
 	- Allow serializing nulls
