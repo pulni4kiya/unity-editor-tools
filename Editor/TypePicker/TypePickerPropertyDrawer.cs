@@ -2,13 +2,23 @@
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace Pulni.EditorTools.Editor {
 	[CustomPropertyDrawer(typeof(TypePickerAttribute))]
 	public class TypePickerPropertyDrawer : PropertyDrawer {
 		private static object[] typesProvider0Args = new object[0];
 		private static object[] typesProvider1Arg = new object[1];
+		private static List<TypePickerMenuOption> menuOptions = new();
 		private TypePickerAttribute Attribute => (TypePickerAttribute)attribute;
+
+		public static void AddMenuOption(string name, Action<SerializedProperty> invokeAction) {
+			menuOptions.Add(new TypePickerMenuOption { Name = name, InvokeAction = invokeAction });
+		}
+
+		public static void RemoveMenuOption(string name) {
+			menuOptions.RemoveAll(option => option.Name == name);
+		}
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
 			if (property.isArray) {
@@ -41,7 +51,22 @@ namespace Pulni.EditorTools.Editor {
 
 				var typePickerPosition = position;
 				typePickerPosition.height = EditorGUIUtility.singleLineHeight;
+				typePickerPosition.width -= 30;
 				var newIndex = EditorGUI.Popup(typePickerPosition, " ", index, subtypes.displayNames);
+
+				var menuButtonRect = position;
+				menuButtonRect.x = typePickerPosition.xMax;
+				menuButtonRect.width = 30;
+				menuButtonRect.height = EditorGUIUtility.singleLineHeight;
+
+				if (GUI.Button(menuButtonRect, "...")) {
+					var menu = new GenericMenu();
+					foreach (var option in menuOptions) {
+						menu.AddItem(new GUIContent(option.Name), false, () => option.InvokeAction(property));
+					}
+					menu.DropDown(menuButtonRect);
+				}
+
 
 				if (newIndex != index) {
 					SetReferenceValue(property, subtypes.subtypes[newIndex]);
@@ -83,17 +108,14 @@ namespace Pulni.EditorTools.Editor {
 
 				var method = EditorHelper.GetMethodOnObject(container, this.Attribute.TypesGetterMethodName);
 				if (method == null) {
-					Debug.LogError($"[TypePicker] Couldn't resolve method \"{ this.Attribute.TypesGetterMethodName}\" on an object of type \"{container.GetType().Name}\"!");
+					Debug.LogError($"[TypePicker] Couldn't resolve method \"{this.Attribute.TypesGetterMethodName}\" on an object of type \"{container.GetType().Name}\"!");
 					return null;
 				}
 
-				if (method.GetParameters().Length > 0)
-                {
+				if (method.GetParameters().Length > 0) {
 					typesProvider1Arg[0] = property;
 					return (TypePickerOptions)method.Invoke(container, typesProvider1Arg);
-				}
-				else
-				{
+				} else {
 					return (TypePickerOptions)method.Invoke(container, typesProvider0Args);
 				}
 
@@ -152,5 +174,10 @@ namespace Pulni.EditorTools.Editor {
 
 			PrefabUtility.SetPropertyModifications(property.serializedObject.targetObject, modifications.ToArray());
 		}
+	}
+
+	public class TypePickerMenuOption {
+		public string Name { get; set; }
+		public Action<SerializedProperty> InvokeAction { get; set; }
 	}
 }
