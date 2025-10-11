@@ -76,16 +76,14 @@ namespace Pulni.EditorTools.Editor {
 			throw new InvalidOperationException($"Could not retrieve field or property {name} from object of type {type.FullName}");
 		}
 
-		private static object GetValueAtIndex(object source, int index)
-		{
+		private static object GetValueAtIndex(object source, int index) {
 			var list = source as IList;
 			if (list != null) return list[index];
 
 			var enumerable = source as IEnumerable;
 			if (enumerable != null) {
 				var current = 0;
-				foreach (var item in enumerable)
-				{
+				foreach (var item in enumerable) {
 					if (current == index) return item;
 					current++;
 				}

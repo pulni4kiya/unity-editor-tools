@@ -21,23 +21,9 @@ namespace Pulni.EditorTools.Editor {
 		}
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-			if (property.isArray) {
-				for (int i = 0; i < property.arraySize; i++) {
-					var itemProperty = property.GetArrayElementAtIndex(i);
-					var itemPos = position;
-					OnItemGUI(itemPos, itemProperty, label);
-				}
-			} else {
-				OnItemGUI(position, property, label);
-			}
-		}
-
-		private void OnItemGUI(Rect position, SerializedProperty property, GUIContent label) {
-			var subtypes = GetAvailableTypes(property);
 			var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
-			var index = Array.IndexOf(subtypes.subtypes, currentType);
-
-			if (index < 0) {
+			if (currentType == null) {
+				var subtypes = GetAvailableTypes(property);
 				if (subtypes.subtypes.Length == 0) {
 					EditorGUI.LabelField(position, label, new GUIContent("No valid types found."));
 					return;
@@ -45,41 +31,88 @@ namespace Pulni.EditorTools.Editor {
 				SetReferenceValue(property, subtypes.subtypes[0]);
 			}
 
-			if (property.isExpanded) {
-				var labelCopy = new GUIContent(label);
-
-
-				var typePickerPosition = position;
-				typePickerPosition.height = EditorGUIUtility.singleLineHeight;
-				typePickerPosition.width -= 30;
-				var newIndex = EditorGUI.Popup(typePickerPosition, " ", index, subtypes.displayNames);
-
-				var menuButtonRect = position;
-				menuButtonRect.x = typePickerPosition.xMax;
-				menuButtonRect.width = 30;
-				menuButtonRect.height = EditorGUIUtility.singleLineHeight;
-
-				if (GUI.Button(menuButtonRect, "...")) {
-					var menu = new GenericMenu();
-					foreach (var option in menuOptions) {
-						menu.AddItem(new GUIContent(option.Name), false, () => option.InvokeAction(property));
-					}
-					menu.DropDown(menuButtonRect);
-				}
-
-
-				if (newIndex != index) {
-					SetReferenceValue(property, subtypes.subtypes[newIndex]);
-				}
-
-				EditorGUI.PropertyField(position, property, labelCopy, true);
+			var labelCopy = new GUIContent(label);
+			if (this.Attribute.DrawMode == TypePickerAttribute.TypePickerDrawMode.Extended) {
+				this.DrawStandardPicker(position, property, labelCopy);
 			} else {
-				property.isExpanded = EditorGUI.Foldout(position, property.isExpanded, label);
+				this.DrawCompactPicker(position, property, labelCopy);
 			}
 		}
 
+		private void DrawStandardPicker(Rect position, SerializedProperty property, GUIContent label) {
+			var subtypes = GetAvailableTypes(property);
+			var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
+			var index = Array.IndexOf(subtypes.subtypes, currentType);
+
+			var typePickerPosition = position;
+			typePickerPosition.height = EditorGUIUtility.singleLineHeight;
+			typePickerPosition.width -= 30;
+			var newIndex = EditorGUI.Popup(typePickerPosition, " ", index, subtypes.displayNames);
+
+			var menuButtonRect = position;
+			menuButtonRect.x = typePickerPosition.xMax;
+			menuButtonRect.width = 30;
+			menuButtonRect.height = EditorGUIUtility.singleLineHeight;
+
+			if (newIndex != index) {
+				SetReferenceValue(property, subtypes.subtypes[newIndex]);
+			}
+
+			if (GUI.Button(menuButtonRect, "...")) {
+				var menu = new GenericMenu();
+				foreach (var option in menuOptions) {
+					menu.AddItem(new GUIContent(option.Name), false, () => option.InvokeAction(property));
+				}
+				menu.DropDown(menuButtonRect);
+			}
+
+			DrawPropertyField(position, property, label, position.width - EditorGUIUtility.labelWidth);
+		}
+
+		private void DrawCompactPicker(Rect position, SerializedProperty property, GUIContent label) {
+			var buttonRect = position;
+			buttonRect.width = 20;
+			buttonRect.height = EditorGUIUtility.singleLineHeight;
+			buttonRect.x = position.xMax - buttonRect.width;
+
+			if (GUI.Button(buttonRect, $"⁕")) {
+				var menu = new GenericMenu();
+
+				// Add type picker options
+				var subtypes = GetAvailableTypes(property);
+				var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
+				for (int i = 0; i < subtypes.subtypes.Length; i++) {
+					var type = subtypes.subtypes[i];
+					var displayName = subtypes.displayNames[i];
+					var isSelected = type == currentType;
+
+					menu.AddItem(new GUIContent(displayName), isSelected, () => {
+						SetReferenceValue(property, type);
+					});
+				}
+
+				// Add menu options
+				if (menuOptions.Count > 0) {
+					menu.AddSeparator("");
+
+					foreach (var option in menuOptions) {
+						menu.AddItem(new GUIContent(option.Name), false, () => option.InvokeAction(property));
+					}
+				}
+
+				menu.DropDown(buttonRect);
+			}
+
+			DrawPropertyField(position, property, label, buttonRect.width);
+		}
+
+
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
 			return EditorGUI.GetPropertyHeight(property, label);
+		}
+
+		private void DrawPropertyField(Rect position, SerializedProperty property, GUIContent label, float pickerWidth) {
+			EditorGUI.PropertyField(position, property, label, true);
 		}
 
 		private TypePickerOptions GetAvailableTypes(SerializedProperty property) {
