@@ -410,13 +410,16 @@ namespace {implementationNamespace} {{
 
         private static string GenerateTypePickerInfoAttribute(string className, bool isOneTimeImplementation) {
             string displayName;
+            string order;
             if (isOneTimeImplementation) {
-                displayName = "Custom/" + className;
+                displayName = "One Time/" + className;
+                order = ", order: 10000";
             } else {
                 displayName = ObjectNames.NicifyVariableName(className);
+                order = "";
             }
 
-            return $"[TypePickerInfo(\"{displayName}\")]";
+            return $"[TypePickerInfo(\"{displayName}\"{order})]";
         }
 
         private static string SuggestImplementationName(SerializedProperty property, Type baseType) {
