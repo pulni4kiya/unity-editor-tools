@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEditor;
+using System.Reflection;
+using System;
 
 namespace Pulni.EditorTools.Editor {
     internal static class EditorExtensionMethods {
@@ -14,6 +16,13 @@ namespace Pulni.EditorTools.Editor {
                 component = go.AddComponent<T>();
             }
             return component;
+        }
+
+        public static FieldInfo GetFieldInParents(this Type type, string fieldName, BindingFlags bindingFlags) {
+            var fi = type.GetField(fieldName, bindingFlags);
+            if (fi != null) return fi;
+            if (type.BaseType != null) return GetFieldInParents(type.BaseType, fieldName, bindingFlags);
+            return null;
         }
     }
 }

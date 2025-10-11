@@ -9,9 +9,11 @@ using UnityEngine;
 
 namespace Pulni.EditorTools.Editor {
     public class TypePickerStandardMenu : MonoBehaviour {
-        private const string GeneratedImplementationsFolder = "Assets/CodeGen/Implementations";
-        private const string GeneratedImplementationsNamespace = "CodeGen.Implementations";
-        private const string PendingImplementationKey = "TypePicker_PendingImplementation";
+        public const string GeneratedImplementationsFolder = "Assets/CodeGen/Implementations";
+        public const string GeneratedImplementationsNamespace = "CodeGen.Implementations";
+        public const string PendingImplementationKey = "TypePicker_PendingImplementation";
+
+        public static readonly Dictionary<Type, ITypeImplementationGenerator> TypeImplementationsGenerators = new Dictionary<Type, ITypeImplementationGenerator>();
 
         [InitializeOnLoadMethod]
         private static void Initialize() {
@@ -77,7 +79,7 @@ namespace Pulni.EditorTools.Editor {
                 Directory.CreateDirectory(GeneratedImplementationsFolder);
             }
 
-            string className = SuggestImplementationName(property, baseType);
+            string className = SuggestImplementationName(property);
             string filePath = Path.Combine(GeneratedImplementationsFolder, className + ".cs");
 
             if (File.Exists(filePath)) {
@@ -156,12 +158,14 @@ namespace Pulni.EditorTools.Editor {
         private static void CreateDefaultImplementationFile(SerializedProperty property, Type baseType, string className, string directory, bool setAsReference = false, bool isOneTimeImplementation = false) {
             string filePath = Path.Combine(directory, className + ".cs");
 
-            // Get the namespace from the base type
-            string baseNamespace = baseType.Namespace ?? "";
-            string implementationNamespace = !string.IsNullOrEmpty(GeneratedImplementationsNamespace) ? GeneratedImplementationsNamespace : baseNamespace;
-
             // Generate default implementation template with more complete structure
-            string code = GenerateDefaultImplementationTemplate(className, baseType, implementationNamespace, baseNamespace, isOneTimeImplementation);
+            string code;
+            if (TypeImplementationsGenerators.TryGetValue(baseType, out var generator)) {
+                string typePickerInfo = GenerateTypePickerInfoAttribute(className, isOneTimeImplementation);
+                code = generator.GenerateImplementation(property, baseType, className, GeneratedImplementationsNamespace, typePickerInfo, isOneTimeImplementation);
+            } else {
+                code = GenerateDefaultImplementationTemplate(className, baseType, GeneratedImplementationsNamespace, isOneTimeImplementation);
+            }
 
             File.WriteAllText(filePath, code);
             AssetDatabase.ImportAsset(filePath);
@@ -171,11 +175,11 @@ namespace Pulni.EditorTools.Editor {
 
             // If we need to set this as a reference, store the information for after domain reload
             if (setAsReference) {
-                StorePendingImplementation(property, className, implementationNamespace);
+                StorePendingImplementation(property, className, GeneratedImplementationsNamespace);
             }
         }
 
-        private static string GenerateDefaultImplementationTemplate(string className, Type baseType, string implementationNamespace, string baseNamespace, bool isOneTimeImplementation = false) {
+        private static string GenerateDefaultImplementationTemplate(string className, Type baseType, string implementationNamespace, bool isOneTimeImplementation = false) {
             string baseTypeName = GetFullTypeName(baseType);
 
             // Get all abstract/virtual methods from the base type
@@ -188,7 +192,7 @@ namespace Pulni.EditorTools.Editor {
             CollectUsedTypes(properties, usedTypes);
 
             // Generate using statements
-            string usingStatements = GenerateUsingStatements(baseNamespace, implementationNamespace, usedTypes);
+            string usingStatements = GenerateUsingStatements(baseType.Namespace, implementationNamespace, usedTypes);
 
             // Generate TypePickerInfo attribute
             string typePickerInfo = GenerateTypePickerInfoAttribute(className, isOneTimeImplementation);
@@ -347,9 +351,6 @@ namespace {implementationNamespace} {{
         private static void AddTypeToUsedTypes(Type type, HashSet<string> usedTypes) {
             if (type == null) return;
 
-            // Skip primitive types and common types that don't need using statements
-            if (IsPrimitiveOrCommonType(type)) return;
-
             // Add the namespace if it exists and is not empty
             if (!string.IsNullOrEmpty(type.Namespace)) {
                 usedTypes.Add(type.Namespace);
@@ -361,27 +362,6 @@ namespace {implementationNamespace} {{
                     AddTypeToUsedTypes(genericArg, usedTypes);
                 }
             }
-        }
-
-        private static bool IsPrimitiveOrCommonType(Type type) {
-            // Common types that don't need using statements
-            var commonTypes = new[] {
-                typeof(void), typeof(object), typeof(string),
-                typeof(int), typeof(float), typeof(double), typeof(bool),
-                typeof(byte), typeof(sbyte), typeof(short), typeof(ushort),
-                typeof(uint), typeof(long), typeof(ulong), typeof(char),
-                typeof(decimal), typeof(IntPtr), typeof(UIntPtr)
-            };
-
-            if (commonTypes.Contains(type)) return true;
-
-            // Check if it's a primitive type
-            if (type.IsPrimitive) return true;
-
-            // Check if it's in System namespace (most System types don't need explicit using)
-            if (type.Namespace == "System") return true;
-
-            return false;
         }
 
         private static string GenerateUsingStatements(string baseNamespace, string implementationNamespace, HashSet<string> usedTypes) {
@@ -422,7 +402,7 @@ namespace {implementationNamespace} {{
             return $"[TypePickerInfo(\"{displayName}\"{order})]";
         }
 
-        private static string SuggestImplementationName(SerializedProperty property, Type baseType) {
+        private static string SuggestImplementationName(SerializedProperty property) {
             // Get the component that owns the property
             var targetObj = property.serializedObject.targetObject;
             var objectName = GetPrefabOrObjectName(targetObj);
@@ -434,7 +414,7 @@ namespace {implementationNamespace} {{
             var propName = property.propertyPath.Split('.')[0].Replace("k__BackingField", "");
 
             // Combine them with underscores
-            var combined = $"{objectName}_{compTypeName}_{propName}_{baseType.Name}";
+            var combined = $"{objectName}_{compTypeName}_{propName}";
 
             // Remove any invalid characters (only allow letters, digits, and underscores)
             combined = Regex.Replace(combined, @"[^a-zA-Z0-9_]", "");
