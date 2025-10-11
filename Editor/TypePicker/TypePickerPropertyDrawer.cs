@@ -21,6 +21,12 @@ namespace Pulni.EditorTools.Editor {
 		}
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+			if (property.propertyType != SerializedPropertyType.ManagedReference) {
+				this.DrawPropertyField(position, property, label, 0f);
+				Debug.LogError("TypePicker is only supported on managed reference properties.");
+				return;
+			}
+
 			var currentType = TypePickerHelper.GetActualType(property.managedReferenceFullTypename);
 			if (currentType == null) {
 				var subtypes = GetAvailableTypes(property);
@@ -32,10 +38,16 @@ namespace Pulni.EditorTools.Editor {
 			}
 
 			var labelCopy = new GUIContent(label);
-			if (this.Attribute.DrawMode == TypePickerAttribute.TypePickerDrawMode.Extended) {
+			if (this.Attribute.DrawMode == TypePickerAttribute.TypePickerDrawMode.Compact) {
+				this.DrawCompactPicker(position, property, labelCopy);
+			} else if (this.Attribute.DrawMode == TypePickerAttribute.TypePickerDrawMode.Extended) {
 				this.DrawStandardPicker(position, property, labelCopy);
 			} else {
-				this.DrawCompactPicker(position, property, labelCopy);
+				if (property.boxedValue is ITypePickerExtended) {
+					this.DrawStandardPicker(position, property, labelCopy);
+				} else {
+					this.DrawCompactPicker(position, property, labelCopy);
+				}
 			}
 		}
 
@@ -102,7 +114,7 @@ namespace Pulni.EditorTools.Editor {
 
 				menu.DropDown(buttonRect);
 			}
-
+			position.width -= 10f;
 			DrawPropertyField(position, property, label, buttonRect.width);
 		}
 
