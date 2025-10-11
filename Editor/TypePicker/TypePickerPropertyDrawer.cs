@@ -112,7 +112,11 @@ namespace Pulni.EditorTools.Editor {
 		}
 
 		private void DrawPropertyField(Rect position, SerializedProperty property, GUIContent label, float pickerWidth) {
+			// Hack: This is a hack to properly draw the description text, if the property is drawn with that editor
+			var oldWidth = EditorDescribablePropertyDrawer.DescriptionWidthTaken;
+			EditorDescribablePropertyDrawer.DescriptionWidthTaken = pickerWidth;
 			EditorGUI.PropertyField(position, property, label, true);
+			EditorDescribablePropertyDrawer.DescriptionWidthTaken = oldWidth;
 		}
 
 		private TypePickerOptions GetAvailableTypes(SerializedProperty property) {
