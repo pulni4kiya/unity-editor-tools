@@ -38,16 +38,10 @@ namespace Pulni.EditorTools.Editor {
 			}
 
 			var labelCopy = new GUIContent(label);
-			if (this.Attribute.DrawMode == TypePickerAttribute.TypePickerDrawMode.Compact) {
+			if (property.boxedValue is ITypePickerCompact) {
 				this.DrawCompactPicker(position, property, labelCopy);
-			} else if (this.Attribute.DrawMode == TypePickerAttribute.TypePickerDrawMode.Extended) {
-				this.DrawStandardPicker(position, property, labelCopy);
 			} else {
-				if (property.boxedValue is ITypePickerExtended) {
-					this.DrawStandardPicker(position, property, labelCopy);
-				} else {
-					this.DrawCompactPicker(position, property, labelCopy);
-				}
+				this.DrawStandardPicker(position, property, labelCopy);
 			}
 		}
 
