@@ -8,40 +8,22 @@ using UnityEngine;
 namespace Pulni.EditorTools {
 	[TypePickerInfo("Delay (Seconds)")]
 	public class DelaySecondsAction : IAdvancedAction {
-		private static DelayWebGLHelper delayGameObject;
-
 		[SerializeField] private float seconds;
-		public Task Invoke(ExecutionContext context) {
-#if UNITY_WEBGL
-			this.InitWebGL();
+		[SerializeField] private bool realtime = false;
+		public async Task Invoke(ExecutionContext context) {
+			if (seconds <= 0f) {
+				return;
+			}
 
-			var tcs = new TaskCompletionSource<object>();
-			delayGameObject.StartCoroutine(DelayWebGL(this.seconds, tcs));
-			return tcs.Task;
-#else
-			return Task.Delay(TimeSpan.FromSeconds(this.seconds));
-#endif
+			var dt = 0f;
+			while (dt < seconds) {
+				await Task.Yield();
+				dt += realtime ? Time.unscaledDeltaTime : Time.deltaTime;
+			}
 		}
 
 		public string GetDescription() {
 			return $"Delay for {seconds} seconds";
 		}
-
-#if UNITY_WEBGL
-		private IEnumerator DelayWebGL(float seconds, TaskCompletionSource<object> tcs) {
-			yield return new WaitForSecondsRealtime(seconds);
-			tcs.SetResult(null);
-		}
-
-		private void InitWebGL() {
-			if (delayGameObject == null) {
-				var gameObject = new GameObject("DelayGameObject");
-				GameObject.DontDestroyOnLoad(gameObject);
-				delayGameObject = gameObject.AddComponent<DelayWebGLHelper>();
-			}
-		}
-
-		private class DelayWebGLHelper : MonoBehaviour { }
-#endif
 	}
 }
